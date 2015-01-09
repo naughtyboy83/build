@@ -51,7 +51,7 @@ except:
     device = product
 
 if not depsonly:
-    print("Device %s not found. Attempting to retrieve device repository from CyanogenMod Github (http://github.com/CyanogenMod)." % device)
+    print("Device %s not found. Attempting to retrieve device repository from CyanHacker Github (http://github.com/CyanHacker-Lollipop)." % device)
 
 repositories = []
 
@@ -70,7 +70,7 @@ def add_auth(githubreq):
         githubreq.add_header("Authorization","Basic %s" % githubauth)
 
 if not depsonly:
-    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:CyanogenMod+in:name+fork:true" % device)
+    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:CyanHacker-Lollipop+in:name+fork:true" % device)
     add_auth(githubreq)
     result = json.loads(urllib.request.urlopen(githubreq).read().decode())
     try:
@@ -79,7 +79,7 @@ if not depsonly:
         print("Failed to search GitHub (offline?)")
         sys.exit()
     if (numresults == 0):
-        print("Could not find device %s on github.com/CyanogenMod" % device)
+        print("Could not find device %s on github.com/CyanHacker-Lollipop" % device)
         sys.exit()
     for res in result['items']:
         repositories.append(res)
@@ -123,7 +123,7 @@ def get_from_manifest(devicename):
         lm = ElementTree.Element("manifest")
 
     for localpath in lm.findall("project"):
-        if re.search("android_device_.*_%s$" % device, localpath.get("name")):
+        if re.search("device_.*_%s$" % device, localpath.get("name")):
             return localpath.get("path")
 
     # Devices originally from AOSP are in the main manifest...
@@ -134,7 +134,7 @@ def get_from_manifest(devicename):
         mm = ElementTree.Element("manifest")
 
     for localpath in mm.findall("project"):
-        if re.search("android_device_.*_%s$" % device, localpath.get("name")):
+        if re.search("device_.*_%s$" % device, localpath.get("name")):
             return localpath.get("path")
 
     return None
@@ -174,15 +174,18 @@ def add_to_manifest(repositories, fallback_branch = None):
         repo_name = repository['repository']
         repo_target = repository['target_path']
         if exists_in_tree(lm, repo_name):
-            print('CyanogenMod/%s already exists' % (repo_name))
+            print('CyanHacker/%s already exists' % (repo_name))
             continue
-
-        print('Adding dependency: CyanogenMod/%s -> %s' % (repo_name, repo_target))
+        print('Adding dependency: %s -> %s' % (repo_name, repo_target))
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": "CyanogenMod/%s" % repo_name })
-
-        if 'branch' in repository:
-            project.set('revision',repository['branch'])
+            "remote": "ch", "name": "%s" % repo_name })
+        
+		## dependencies file must contain "revision" and "remote" unless we are using CyanHacker repo
+		## on default branch
+        if 'revision' in repository:
+            project.set('revision',repository['revision'])
+        if 'remote' in repository:
+            project.set('remote', repository['remote'])
         elif fallback_branch:
             print("Using fallback branch %s for %s" % (fallback_branch, repo_name))
             project.set('revision', fallback_branch)
@@ -210,7 +213,7 @@ def fetch_dependencies(repo_path, fallback_branch = None):
         fetch_list = []
 
         for dependency in dependencies:
-            if not is_in_manifest("CyanogenMod/%s" % dependency['repository']):
+            if not is_in_manifest("CyanHacker-Lollipop/%s" % dependency['repository']):
                 fetch_list.append(dependency)
                 syncable_repos.append(dependency['target_path'])
 
@@ -244,10 +247,10 @@ if depsonly:
 else:
     for repository in repositories:
         repo_name = repository['name']
-        if repo_name.startswith("android_device_") and repo_name.endswith("_" + device):
+        if repo_name.startswith("device_") and repo_name.endswith("_" + device):
             print("Found repository: %s" % repository['name'])
             
-            manufacturer = repo_name.replace("android_device_", "").replace("_" + device, "")
+            manufacturer = repo_name.replace("device_", "").replace("_" + device, "")
             
             default_revision = get_default_revision()
             print("Default revision: %s" % default_revision)
@@ -293,4 +296,4 @@ else:
             print("Done")
             sys.exit()
 
-print("Repository for %s not found in the CyanogenMod Github repository list. If this is in error, you may need to manually add it to your local_manifests/roomservice.xml." % device)
+print("Repository for %s not found in the CyanHacker Github repository list. If this is in error, you may need to manually add it to your local_manifests/roomservice.xml." % device)
