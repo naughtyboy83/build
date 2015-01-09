@@ -584,6 +584,14 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   if HasVendorPartition(input_zip):
     system_progress -= 0.1
 
+  script.Print("****************************************")
+  script.Print("****************************************")
+  script.Print("***************CYANHACKER***************")            
+  script.Print("*******************ROM******************")
+  script.Print("****************************************") 
+  script.Print("****************************************")
+  script.Print("Erasing System...")	
+	
   if block_based:
     common.ZipWriteStr(output_zip, "system/bin/otasigcheck.sh",
                    ""+input_zip.read("SYSTEM/bin/otasigcheck.sh"))
@@ -615,6 +623,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   else:
     script.FormatPartition("/system")
     script.Mount("/system", recovery_mount_options)
+	script.Print("Installing System...")
     if not has_recovery_patch:
       script.UnpackPackageDir("recovery", "/system")
     script.UnpackPackageDir("system", "/system")
@@ -623,6 +632,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
     script.UnpackPackageDir("system/hackapp", "/data/app")
     script.DeletePath("system/hackapp")
     symlinks = CopyPartitionFiles(system_items, input_zip, output_zip)
+	script.Print("Creating Symlinks...")
     script.MakeSymlinks(symlinks)
 
   boot_img = common.GetBootableImage("boot.img", "boot.img",
@@ -679,12 +689,20 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
       script.Unmount("/system")
 
   script.ShowProgress(0.05, 5)
+  script.Print("Flashing Boot Image...")
   script.WriteRawImage("/boot", "boot.img")
 
   script.ShowProgress(0.2, 10)
   device_specific.FullOTA_InstallEnd()
 
   if OPTIONS.extra_script is not None:
+  script.Print("****************************************")
+  script.Print("****************************************")          
+  script.Print("********Rom succesfully flashed*********")
+  script.Print("****************************************")
+  script.Print("****************************************")
+  script.Print("****************Have Fun****************")
+  script.Print("****************************************")
     script.AppendExtra(OPTIONS.extra_script)
 
   script.UnmountAll()
@@ -909,6 +927,7 @@ else if get_stage("%(bcb_dev)s") != "3/3" then
   device_specific.IncrementalOTA_VerifyEnd()
 
   if OPTIONS.two_step:
+    script.Print("Flashing Boot Image...")
     script.WriteRawImage("/boot", "recovery.img")
     script.AppendExtra("""
 set_stage("%(bcb_dev)s", "2/3");
@@ -927,6 +946,7 @@ else
 
   if OPTIONS.two_step:
     common.ZipWriteStr(output_zip, "boot.img", target_boot.data)
+	script.Print("Flashing Boot Image...")
     script.WriteRawImage("/boot", "boot.img")
     print "writing full boot image (forced by two-step mode)"
 
@@ -934,7 +954,7 @@ else
     if updating_boot:
       if include_full_boot:
         print "boot image changed; including full."
-        script.Print("Installing boot image...")
+        script.Print("Flashing Boot Image...")
         script.WriteRawImage("/boot", "boot.img")
       else:
         # Produce the boot image by applying a patch to the current
@@ -1285,6 +1305,7 @@ else
 
   if OPTIONS.two_step:
     common.ZipWriteStr(output_zip, "boot.img", target_boot.data)
+	script.Print("Flashing Boot Image...")
     script.WriteRawImage("/boot", "boot.img")
     print "writing full boot image (forced by two-step mode)"
 
