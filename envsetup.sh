@@ -2420,3 +2420,22 @@ check_bash_version && {
 }
 
 export ANDROID_BUILD_TOP=$(gettop)
+
+# Hackify before we build, we always want to be optimized!
+while read -p "Hackify? y or n " cchoice
+do
+case "$cchoice" in
+	y )
+		export HACKIFY=true
+		break
+		;;
+	n )
+		export HACKIFY=false
+		break
+		;;
+	* )
+		echo "Please answer y or n"
+		break
+		;;
+esac
+done
